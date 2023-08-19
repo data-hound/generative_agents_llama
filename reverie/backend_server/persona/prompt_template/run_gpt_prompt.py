@@ -361,6 +361,18 @@ def run_gpt_prompt_task_decomp(persona,
     print (gpt_response)
     print ("-==- -==- -==- ")
 
+    lines = gpt_response.split('\n')
+    valid_lines = []
+
+    for line in lines:
+        if 'duration in minutes' in line:
+            valid_lines.append(line)
+
+    gpt_response = '\n'.join(valid_lines)
+    print('Valid lines')
+    print(gpt_response)
+    print ("-==- -==- -==- ")
+    
     # TODO SOMETHING HERE sometimes fails... See screenshot
     temp = [i.strip() for i in gpt_response.split("\n")]
     _cr = []
