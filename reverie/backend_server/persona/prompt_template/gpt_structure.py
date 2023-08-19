@@ -141,6 +141,9 @@ def ChatGPT_request(prompt, temper=0.8):
     
     response = response["choices"][0]["text"]
     print('🔔🔔🔔'+response+'🔔🔔🔔')
+    beta_response = response.replace(' ', '').replace('\n', '')
+    if '{"output":' != beta_response[:10]:
+      return "Error response "
 
     return response
   
