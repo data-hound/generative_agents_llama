@@ -1,5 +1,6 @@
 """
 Author: Joon Sung Park (joonspk@stanford.edu)
+Autor: Roger Condori (rocondoriflores@gmail.com)
 
 File: gpt_structure.py
 Description: Wrapper functions for calling OpenAI APIs.
@@ -11,7 +12,25 @@ import time
 
 from utils import *
 
-openai.api_key = openai_api_key
+from llama_cpp import Llama
+from huggingface_hub import hf_hub_download
+from sentence_transformers import SentenceTransformer
+import gc
+import torch
+
+model_path = hf_hub_download(
+  repo_id=repo_model,  
+  filename=filename_model
+)
+
+llm = Llama(
+    model_path=model_path,
+    n_threads=2, # CPU cores
+    n_batch=512, 
+    n_gpu_layers=43,
+    n_ctx=4096,
+    use_mlock=True, 
+)
 
 def temp_sleep(seconds=0.1):
   time.sleep(seconds)
@@ -19,12 +38,27 @@ def temp_sleep(seconds=0.1):
 def ChatGPT_single_request(prompt): 
   temp_sleep()
 
-  completion = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo", 
-    messages=[{"role": "user", "content": prompt}]
-  )
-  return completion["choices"][0]["message"]["content"]
+  prompt_template = f'''
+  ### Instruction:
+  {prompt}
+  ### Response:
+  '''
 
+  response = llm(
+      prompt=prompt_template,
+      temperature=temperature_model,
+      top_p=0.95,
+      repeat_penalty=1.2,
+      top_k=50,
+  )
+
+  print('📹###📹')
+  print(prompt_template)
+  response = response["choices"][0]["text"]
+  print(response)
+  print('📹###📹')
+
+  return response
 
 # ============================================================================
 # #####################[SECTION 1: CHATGPT-3 STRUCTURE] ######################
@@ -45,18 +79,35 @@ def GPT4_request(prompt):
   temp_sleep()
 
   try: 
-    completion = openai.ChatCompletion.create(
-    model="gpt-4", 
-    messages=[{"role": "user", "content": prompt}]
+
+    prompt_template = f'''
+    ### Instruction:
+    {prompt}
+    ### Response:
+    '''
+
+    response = llm(
+        prompt=prompt_template,
+        temperature=temperature_model,
+        top_p=0.95,
+        repeat_penalty=1.2,
+        top_k=50,
     )
-    return completion["choices"][0]["message"]["content"]
+
+    print('📹###📹')
+    print(prompt_template)
+    response = response["choices"][0]["text"]
+    print(response)
+    print('📹###📹')
+
+    return response
   
   except: 
     print ("ChatGPT ERROR")
     return "ChatGPT ERROR"
 
 
-def ChatGPT_request(prompt): 
+def ChatGPT_request(prompt, temperature=0.8):
   """
   Given a prompt and a dictionary of GPT parameters, make a request to OpenAI
   server and returns the response. 
@@ -70,11 +121,28 @@ def ChatGPT_request(prompt):
   """
   # temp_sleep()
   try: 
-    completion = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo", 
-    messages=[{"role": "user", "content": prompt}]
+    prompt_template = f'''
+    ### Instruction: Complete the {"output": "<fill me>"}
+    {prompt}
+    ### Response:\nStep 2 output json:\n'''
+
+    response = llm(
+        prompt=prompt_template,
+        #max_tokens=gpt_parameter['max_tokens'],
+        temperature=temperature,
+        top_p=0.95,
+        repeat_penalty=1.2,
+        top_k=50,
+        stop=['### Instruction:'],
     )
-    return completion["choices"][0]["message"]["content"]
+
+    print('📸###📸')
+    print(prompt_template)
+    
+    response = response["choices"][0]["text"]
+    print('🔔🔔🔔'+response+'🔔🔔🔔')
+
+    return response
   
   except: 
     print ("ChatGPT ERROR")
@@ -138,17 +206,20 @@ def ChatGPT_safe_generate_response(prompt,
     print ("CHAT GPT PROMPT")
     print (prompt)
 
-  for i in range(repeat): 
-
-    try: 
-      curr_gpt_response = ChatGPT_request(prompt).strip()
+  repeat = repeat + 4
+  for i in range(repeat):
+    pre = i+1
+    temper = 0.1+(pre/10)
+    print('⏲️⏲️⏲️', i , temper)
+    try:
+      curr_gpt_response = ChatGPT_request(prompt, temperature=temper).strip() 
       end_index = curr_gpt_response.rfind('}') + 1
       curr_gpt_response = curr_gpt_response[:end_index]
       curr_gpt_response = json.loads(curr_gpt_response)["output"]
 
-      # print ("---ashdfaf")
-      # print (curr_gpt_response)
-      # print ("000asdfhia")
+      print ("---ashdfaf")
+      print (curr_gpt_response)
+      print ("000asdfhia")
       
       if func_validate(curr_gpt_response, prompt=prompt): 
         return func_clean_up(curr_gpt_response, prompt=prompt)
@@ -208,17 +279,28 @@ def GPT_request(prompt, gpt_parameter):
   """
   temp_sleep()
   try: 
-    response = openai.Completion.create(
-                model=gpt_parameter["engine"],
-                prompt=prompt,
-                temperature=gpt_parameter["temperature"],
-                max_tokens=gpt_parameter["max_tokens"],
-                top_p=gpt_parameter["top_p"],
-                frequency_penalty=gpt_parameter["frequency_penalty"],
-                presence_penalty=gpt_parameter["presence_penalty"],
-                stream=gpt_parameter["stream"],
-                stop=gpt_parameter["stop"],)
-    return response.choices[0].text
+
+    prompt_template = f'''
+    ### Instruction: Complete the Activity
+    ### Response:
+    {prompt}'''
+
+    response = llm(
+        prompt=prompt_template,
+        max_tokens=gpt_parameter['max_tokens'],
+        temperature=float(gpt_parameter['temperature']),
+        top_p=0.95,
+        repeat_penalty=1.2,
+        top_k=50,
+        stop=gpt_parameter['stop'],
+    )
+
+    print('🈷️###🈷️')
+    print(prompt_template)
+    response = response["choices"][0]["text"]
+    print('[🔔🔔🔔]'+response+'[🔔🔔🔔]')
+    print(type(response))
+    return response
   except: 
     print ("TOKEN LIMIT EXCEEDED")
     return "TOKEN LIMIT EXCEEDED"
@@ -277,8 +359,9 @@ def get_embedding(text, model="text-embedding-ada-002"):
   text = text.replace("\n", " ")
   if not text: 
     text = "this is blank"
-  return openai.Embedding.create(
-          input=[text], model=model)['data'][0]['embedding']
+  model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+  embeddings = model.encode(text)
+  return embeddings
 
 
 if __name__ == '__main__':
@@ -309,23 +392,3 @@ if __name__ == '__main__':
                                  True)
 
   print (output)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
