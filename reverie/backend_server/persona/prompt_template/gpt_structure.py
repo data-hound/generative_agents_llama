@@ -29,7 +29,7 @@ llm = Llama(
     n_batch=512, 
     n_gpu_layers=43,
     n_ctx=4096,
-    use_mlock=True, 
+    #use_mlock=True, 
 )
 
 def temp_sleep(seconds=0.1):
@@ -107,7 +107,7 @@ def GPT4_request(prompt):
     return "ChatGPT ERROR"
 
 
-def ChatGPT_request(prompt, temperature=0.8):
+def ChatGPT_request(prompt, temper=0.8):
   """
   Given a prompt and a dictionary of GPT parameters, make a request to OpenAI
   server and returns the response. 
@@ -122,14 +122,14 @@ def ChatGPT_request(prompt, temperature=0.8):
   # temp_sleep()
   try: 
     prompt_template = f'''
-    ### Instruction: Complete the {"output": "<fill me>"}
+    ### Instruction: Complete the {{"output": "<fill me>"}}
     {prompt}
     ### Response:\nStep 2 output json:\n'''
 
     response = llm(
         prompt=prompt_template,
         #max_tokens=gpt_parameter['max_tokens'],
-        temperature=temperature,
+        temperature=temper,
         top_p=0.95,
         repeat_penalty=1.2,
         top_k=50,
@@ -212,7 +212,7 @@ def ChatGPT_safe_generate_response(prompt,
     temper = 0.1+(pre/10)
     print('⏲️⏲️⏲️', i , temper)
     try:
-      curr_gpt_response = ChatGPT_request(prompt, temperature=temper).strip() 
+      curr_gpt_response = ChatGPT_request(prompt, temper=temper).strip() 
       end_index = curr_gpt_response.rfind('}') + 1
       curr_gpt_response = curr_gpt_response[:end_index]
       curr_gpt_response = json.loads(curr_gpt_response)["output"]
