@@ -143,7 +143,8 @@ def ChatGPT_request(prompt, temper=0.8):
     print('🔔🔔🔔'+response+'🔔🔔🔔')
     beta_response = response.replace(' ', '').replace('\n', '')
     if '{"output":' != beta_response[:10]:
-      return "Error response "
+      print('Error response')
+      return "Error response"
 
     return response
   
@@ -221,7 +222,7 @@ def ChatGPT_safe_generate_response(prompt,
       curr_gpt_response = json.loads(curr_gpt_response)["output"]
 
       print ("---ashdfaf")
-      print (curr_gpt_response)
+      print (curr_gpt_response, type(curr_gpt_response))
       print ("000asdfhia")
       
       if func_validate(curr_gpt_response, prompt=prompt): 
