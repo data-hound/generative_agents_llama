@@ -1,7 +1,7 @@
 """
 Author: Joon Sung Park (joonspk@stanford.edu)
 
-File: run_gpt_prompt.py
+File: run_gpt_prompt.py 
 Description: Defines all run gpt prompt functions. These functions directly
 interface with the safe_generate_response function.
 """
@@ -365,6 +365,8 @@ def run_gpt_prompt_task_decomp(persona,
     valid_lines = []
 
     for line in lines:
+        if "In 5 min incre" in line:
+            break
         if 'duration in minutes' in line:
             valid_lines.append(line)
 
@@ -1863,7 +1865,8 @@ def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, 
     return prompt_input
   
   def __func_clean_up(gpt_response, prompt=""):
-    gpt_response = int(gpt_response.strip())
+    #gpt_response = int(gpt_response.strip())
+    print('🚀🚀🚀run_gpt_prompt_event_poignancy', type(gpt_response))
     return gpt_response
 
   def __func_validate(gpt_response, prompt=""): 
@@ -1936,6 +1939,7 @@ def run_gpt_prompt_thought_poignancy(persona, event_description, test_input=None
     return prompt_input
   
   def __func_clean_up(gpt_response, prompt=""):
+    print('🚀🚀🚀run_gpt_prompt_thought_poignancy', type(gpt_response))
     gpt_response = int(gpt_response.strip())
     return gpt_response
 
@@ -2798,9 +2802,9 @@ def run_gpt_generate_safety_score(persona, comment, test_input=None, verbose=Fal
   prompt = generate_prompt(prompt_input, prompt_template)
   print (prompt)
   fail_safe = get_fail_safe() 
-  output = ChatGPT_safe_generate_response_OLD(prompt, 3, fail_safe,
-                        __chat_func_validate, __chat_func_clean_up, verbose)
-  print (output)
+  output = ChatGPT_safe_generate_response(prompt, 3, fail_safe,
+                        __chat_func_validate, __chat_func_clean_up, verbose) # OLD
+  print ('🎏🎏🎏run_gpt_generate_safety_score', output)
   
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 50, 
                "temperature": 0, "top_p": 1, "stream": False,
@@ -2913,30 +2917,12 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
   prompt = generate_prompt(prompt_input, prompt_template)
   print (prompt)
   fail_safe = get_fail_safe() 
-  output = ChatGPT_safe_generate_response_OLD(prompt, 3, fail_safe,
-                        __chat_func_validate, __chat_func_clean_up, verbose)
-  print (output)
+  output = ChatGPT_safe_generate_response(prompt, 3, fail_safe,
+                        __chat_func_validate, __chat_func_clean_up, verbose) # OLD
+  print ('🎏🎏🎏run_gpt_generate_iterative_chat_utt', output)
   
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 50, 
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
