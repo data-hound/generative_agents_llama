@@ -410,6 +410,11 @@ class ReverieServer:
           # current time moves by <sec_per_step> amount. 
           self.step += 1
           self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
+          print('|'*100)
+          print('|'*100)
+          print ('World takes one step forward. Step Number: ', self.step)
+          print('|'*100)
+          print('|'*100)
 
           int_counter -= 1
           
