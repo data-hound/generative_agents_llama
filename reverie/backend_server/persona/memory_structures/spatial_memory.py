@@ -103,8 +103,14 @@ class MemoryTree:
 
     try: 
       x = ", ".join(list(self.tree[curr_world][curr_sector][curr_arena]))
-    except: 
-      x = ", ".join(list(self.tree[curr_world][curr_sector][curr_arena.lower()]))
+    except KeyError as ke:
+      try:  
+        if ' or ' in curr_arena.lower():
+          first_option = curr_arena.lower().index(' or ')
+          curr_arena = curr_arena.lower()[:first_option]
+        x = ", ".join(list(self.tree[curr_world][curr_sector][curr_arena.lower()]))
+      except KeyError as ke:
+        print ("One of these is not present in the tree {},{},{}".format(curr_world, curr_sector, curr_arena))
     return x
 
 

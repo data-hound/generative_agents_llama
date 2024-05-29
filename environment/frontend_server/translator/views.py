@@ -105,6 +105,7 @@ def UIST_Demo(request):
 def home(request):
   f_curr_sim_code = "temp_storage/curr_sim_code.json"
   f_curr_step = "temp_storage/curr_step.json"
+  f_server_start = "temp_storage/reverie_start.json"
 
   if not check_if_file_exists(f_curr_step): 
     context = {}
@@ -117,7 +118,7 @@ def home(request):
   with open(f_curr_step) as json_file:  
     step = json.load(json_file)["step"]
 
-  os.remove(f_curr_step)
+  # os.remove(f_curr_step)
 
   persona_names = []
   persona_names_set = set()

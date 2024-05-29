@@ -12,6 +12,7 @@ sys.path.append('../../')
 
 import json
 import datetime
+import numpy as np
 
 from global_methods import *
 
@@ -46,6 +47,15 @@ class ConceptNode:
   def spo_summary(self): 
     return (self.subject, self.predicate, self.object)
 
+class NumpyEncoder(json.JSONEncoder):
+    """
+    Class to do proper json encoding of numpy arrays.
+    Taken from https://stackoverflow.com/a/47626762
+    """
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 class AssociativeMemory: 
   def __init__(self, f_saved): 
@@ -147,7 +157,17 @@ class AssociativeMemory:
       json.dump(r, outfile)
 
     with open(out_json+"/embeddings.json", "w") as outfile:
-      json.dump(self.embeddings, outfile)
+      try:
+        json.dump(self.embeddings, outfile)
+      except TypeError as te:
+        print("Got TypeError while trying to write ")
+        print(self.embeddings)
+        print("To json. Error: ", te)
+
+        print("Trying custom class NumpyEncoder")
+
+        json.dump(self.embeddings, outfile,
+                  cls=NumpyEncoder)
 
 
   def add_event(self, created, expiration, s, p, o, 

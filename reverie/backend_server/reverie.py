@@ -152,6 +152,11 @@ class ReverieServer:
     curr_step["step"] = self.step
     with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile: 
       outfile.write(json.dumps(curr_step, indent=2))
+    
+    reverie_start_time = dict()
+    reverie_start_time['time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(f"{fs_temp_storage}/reverie_start.json", "w") as outfile:
+      outfile.write(json.dumps(reverie_start_time, indent=2))
 
 
   def save(self): 
@@ -413,6 +418,7 @@ class ReverieServer:
           print('|'*100)
           print('|'*100)
           print ('World takes one step forward. Step Number: ', self.step)
+          print('It took {} secs for step number {}'.format(self.sec_per_step, self.step))
           print('|'*100)
           print('|'*100)
 
@@ -463,7 +469,8 @@ class ReverieServer:
           # Finishes the simulation environment but does not save the progress
           # and erases all saved data from current simulation. 
           # Example: exit 
-          shutil.rmtree(sim_folder) 
+          shutil.rmtree(sim_folder)
+          shutil.rmtree(f"{fs_temp_storage}/reverie_start.json")
           break 
 
         elif sim_command.lower() == "save": 
